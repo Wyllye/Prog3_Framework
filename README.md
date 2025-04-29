@@ -1,4 +1,4 @@
-# 📦 Prog3_Framework
+# 🗃️ Prog3_Framework
 Projeto desenvolvido para a disciplina de Programação III, com foco em aplicação prática de frameworks PHP.
 
 Curso: Ciência da Computação | 5ª fase
