@@ -43,7 +43,7 @@ $valorTotal = $valorTotal ?? 0;
     </div>
 
     <div class="dashboard-card">
-        <h4>Gráfico de Movimentações (em breve)</h4>
+        <h4>Gráfico de Movimentações</h4>
         <canvas id="graficoEstoque" width="800" height="300"></canvas>
     </div>
 
