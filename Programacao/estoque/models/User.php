@@ -1,104 +1,98 @@
 <?php
-
 namespace app\models;
 
-class User extends \yii\base\BaseObject implements \yii\web\IdentityInterface
+use yii\db\ActiveRecord;
+use Yii;
+
+class User extends ActiveRecord implements \yii\web\IdentityInterface
 {
-    public $id;
-    public $username;
+    // atributos virtuais usados só no formulário
     public $password;
-    public $authKey;
-    public $accessToken;
+    public $password_repeat;
 
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
-
-
-    /**
-     * {@inheritdoc}
-     */
-    public static function findIdentity($id)
+    public static function tableName()
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        return '{{%user}}';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function findIdentityByAccessToken($token, $type = null)
+    public function rules()
     {
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
-            }
+        return [
+            // colunas da tabela
+            [['username', 'email'], 'required'],
+            ['email', 'email'],
+            [['username', 'email'], 'string', 'max' => 255],
+
+            // senha apenas no registro
+            ['password', 'required', 'on' => 'register'],
+            ['password', 'string', 'min' => 6],
+            ['password_repeat', 'compare', 'compareAttribute' => 'password', 'message' => 'As senhas não coincidem'],
+
+            // demais regras de status/auth_key se tiver...
+        ];
+    }
+
+    public function attributeLabels()
+    {
+        return [
+            'username'        => 'Usuário',
+            'email'           => 'E-mail',
+            'password'        => 'Senha',
+            'password_repeat' => 'Repita a Senha',
+        ];
+    }
+
+    public function beforeSave($insert)
+    {
+        if (!parent::beforeSave($insert)) {
+            return false;
         }
 
+        // gera auth_key uma só vez ao criar
+        if ($insert) {
+            $this->auth_key = Yii::$app->security->generateRandomString();
+        }
+
+        // se password foi preenchido, gera hash
+        if (!empty($this->password)) {
+            $this->password_hash = Yii::$app->security->generatePasswordHash($this->password);
+        }
+
+        return true;
+    }
+
+    // IdentityInterface...
+
+    public static function findIdentity($id)
+    {
+        return static::findOne($id);
+    }
+
+    public static function findIdentityByAccessToken($token, $type = null)
+    {
         return null;
     }
 
+    public function getId()
+    {
+        return $this->getPrimaryKey();
+    }
+
+    public function getAuthKey()
+    {
+        return $this->auth_key;
+    }
+
+    public function validateAuthKey($authKey)
+    {
+        return $this->getAuthKey() === $authKey;
+    }
+
     /**
-     * Finds user by username
-     *
-     * @param string $username
-     * @return static|null
+     * Busca usuário pelo username
      */
     public static function findByUsername($username)
     {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAuthKey()
-    {
-        return $this->authKey;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function validateAuthKey($authKey)
-    {
-        return $this->authKey === $authKey;
-    }
-
-    /**
-     * Validates password
-     *
-     * @param string $password password to validate
-     * @return bool if password provided is valid for current user
-     */
-    public function validatePassword($password)
-    {
-        return $this->password === $password;
+        return static::findOne(['username' => $username]);
     }
 }
