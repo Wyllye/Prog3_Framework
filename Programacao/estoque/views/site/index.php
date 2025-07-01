@@ -1,60 +1,58 @@
 <?php
-use app\models\Estoque;
 use yii\helpers\Html;
-use yii\helpers\Url;
-use yii\grid\ActionColumn;
-use yii\grid\GridView;
 
-/** @var yii\web\View $this */
-/** @var yii\data\ActiveDataProvider $dataProvider */
+/* @var $this yii\web\View */
+/* @var int $totalProdutos */
+/* @var float $valorEstoque */
 
-$this->title = 'Estoques';
-$this->params['breadcrumbs'][] = 'Página Inicial';
+$this->title                   = 'Dashboard';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="estoque-container">
+<div class="site-index">
 
-    <!-- Cabeçalho -->
-    <div class="estoque-header mb-4 p-3 rounded-top">
-        <h1 class="estoque-title mb-0">Estoques</h1>
-        <?= Html::a('➕ Nova Movimentação', ['create'], ['class' => 'btn btn-nova-entrada']) ?>
+    <div class="jumbotron bg-light p-4">
+        <h1 class="display-5">Bem-vindo ao Sistema de Controle de Estoque</h1>
+
+        <p class="lead mt-3">
+            <?= Html::a(
+                '<i class="bi bi-plus-lg"></i> Nova Entrada',
+                ['estoque/create', 'tipo' => 'entrada'],
+                ['class' => 'btn btn-success me-2']
+            ) ?>
+            <?= Html::a(
+                '<i class="bi bi-dash-lg"></i> Nova Saída',
+                ['estoque/create', 'tipo' => 'saida'],
+                ['class' => 'btn btn-danger me-2']
+            ) ?>
+            <?= Html::a(
+                '<i class="bi bi-box-seam"></i> Produtos',
+                ['produto/index'],
+                ['class' => 'btn btn-primary me-2']
+            ) ?>
+        </p>
     </div>
 
-    <!-- Grid estilizado -->
-    <div class="estoque-grid p-4 rounded-bottom">
-        <?= GridView::widget([
-            'dataProvider' => $dataProvider,
-            'summary' => "Exibindo {begin}-{end} de {totalCount} itens.",
-            'tableOptions' => ['class' => 'table table-hover'],
-            'columns' => [
-                [
-                    'attribute' => 'id',
-                    'label' => 'ID',
-                    'headerOptions' => ['class' => 'text-primary'],
-                ],
-                [
-                    'attribute' => 'produto_id',
-                    'label' => 'Produto',
-                    'value' => function(Estoque $m) { return $m->produto->nome; },
-                ],
-                'tipo_movimentacao',
-                'quantidade:integer',
-                [
-                    'attribute' => 'data_movimentacao',
-                    'label' => 'Data',
-                    'format' => ['date', 'php:d/m/Y'],
-                ],
-                [
-                    'class' => ActionColumn::class,
-                    'header' => 'Ações',
-                    'headerOptions' => ['class' => 'text-primary'],
-                    'urlCreator' => function ($action, Estoque $model) {
-                        return Url::toRoute([$action, 'id' => $model->id]);
-                    },
-                    'contentOptions' => ['class' => 'text-end'],
-                ],
-            ],
-        ]); ?>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card border-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total de Produtos</h5>
+                    <p class="display-4"><?= $totalProdutos ?></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Valor Atual do Estoque</h5>
+                    <p class="display-4 text-success">
+                        <?= Yii::$app->formatter->asCurrency($valorEstoque, 'BRL') ?>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- aqui viria seu gráfico, por ex.: -->
+        <?php /* echo $this->render('_grafico', [...]); */ ?>
     </div>
 
 </div>

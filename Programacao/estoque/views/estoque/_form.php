@@ -51,7 +51,7 @@ use app\models\Estoque;
                         ->input('number', [
                             'min' => 1,
                             'step' => 1,
-                            'placeholder' => 'Informe um valor inteiro'
+                            'placeholder' => 'Informe a quantidade'
                         ])
                         ->label('Quantidade') ?>
                 </div>
